@@ -7,7 +7,7 @@
     "module"
   ],
   "license": "proprietary",
-  "homepage": "https://github.com/kaisekidev/wp-cron",
+  "homepage": "https://github.com/kaisekidev/kaiseki-wp-cron",
   "authors": [
     {
       "name": "Kaiseki",
@@ -29,8 +29,8 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/kaisekidev/wp-cron/issues",
-    "source": "https://github.com/kaisekidev/wp-cron"
+    "issues": "https://github.com/kaisekidev/kaiseki-wp-cron/issues",
+    "source": "https://github.com/kaisekidev/kaiseki-wp-cron"
   },
   "autoload": {
     "psr-4": {
