@@ -17,10 +17,11 @@ First tagged release.
   - `CustomScheduleInterface` / `IntervalSchedule` — a custom interval returned straight from a job;
     the scheduler registers it on the `cron_schedules` filter automatically, so there is no separate
     registration step or recurrence-name string to keep in sync.
-  - `CronScheduler` — the single `kaiseki/wp-hook` provider that wires each job's action, registers
-    the custom schedules its jobs use, schedules the event, reschedules it when the recurrence
-    changes, and clears events for jobs removed from configuration. `ConfigProvider` adds it to
-    `hook.provider` automatically.
+  - `CronScheduler` — the single `kaiseki/wp-hook` provider that wires each job's action and the
+    `cron_schedules` filter immediately, then on `init` (a fully booted environment) schedules the
+    event, reschedules it when the recurrence changes, and clears events for jobs removed from
+    configuration. The sync is idempotent — it only writes when something changed. `ConfigProvider`
+    adds it to `hook.provider` automatically.
 
 ### Changed
 

@@ -22,12 +22,14 @@ use function wp_schedule_event;
  * Registers every configured {@see CronJobInterface} with WordPress and keeps the
  * scheduled events in sync.
  *
- * This is the single {@see HookProviderInterface} the package activates. For each
- * job it wires the action callback, registers any custom recurrence the job uses
- * (the `cron_schedules` filter), schedules the event if it is missing, reschedules
- * it when the recurrence changed and clears events for jobs that have been removed
- * from configuration — replacing the `wp_next_scheduled()` / `wp_schedule_event()`
- * boilerplate hand-written in each cron class.
+ * This is the single {@see HookProviderInterface} the package activates. It wires
+ * each job's action callback and registers custom recurrences (the `cron_schedules`
+ * filter) immediately — both must be in place whenever WP-Cron fires — and defers
+ * the actual scheduling to `init`, where WordPress is fully booted. On `init` it
+ * schedules the event if it is missing, reschedules it when the recurrence changed
+ * and clears events for jobs removed from configuration — replacing the
+ * `wp_next_scheduled()` / `wp_schedule_event()` boilerplate hand-written in each
+ * cron class.
  */
 final class CronScheduler implements HookProviderInterface
 {
@@ -50,17 +52,16 @@ final class CronScheduler implements HookProviderInterface
 
     public function addHooks(): void
     {
-        $hasCustomSchedule = false;
         foreach ($this->jobs as $job) {
             add_action($job->getHook(), [$job, 'run']);
-            if ($job->getRecurrence() instanceof CustomScheduleInterface) {
-                $hasCustomSchedule = true;
-            }
         }
-        if ($hasCustomSchedule) {
-            add_filter('cron_schedules', [$this, 'addCustomSchedules']);
-        }
-        $this->syncEvents();
+        // Registered unconditionally and early: WordPress consults `cron_schedules`
+        // whenever it (re)schedules an event, including while running due events, so
+        // a job's custom recurrence must resolve even before `init` runs. The filter
+        // is a no-op when no job uses a custom schedule.
+        add_filter('cron_schedules', [$this, 'addCustomSchedules']);
+        // Defer the actual scheduling until WordPress is fully booted.
+        add_action('init', [$this, 'syncEvents']);
     }
 
     /**
@@ -90,8 +91,13 @@ final class CronScheduler implements HookProviderInterface
 
     /**
      * Schedule every configured job and drop events for jobs that are gone.
+     *
+     * Runs on `init` (see {@see addHooks()}). Idempotent: it only writes when the
+     * schedule is actually missing, the recurrence changed, or a job was removed —
+     * so on a steady-state request it just reads the (autoloaded) cron and
+     * managed-hooks state and returns without touching the database.
      */
-    private function syncEvents(): void
+    public function syncEvents(): void
     {
         $active = [];
         foreach ($this->jobs as $job) {
@@ -136,6 +142,8 @@ final class CronScheduler implements HookProviderInterface
         if ($managed === $active) {
             return;
         }
-        update_option(self::MANAGED_HOOKS_OPTION, $active, false);
+        // Autoloaded: syncEvents() reads it on every request, so loading it with
+        // the bulk autoloaded options avoids a separate query each time.
+        update_option(self::MANAGED_HOOKS_OPTION, $active, true);
     }
 }

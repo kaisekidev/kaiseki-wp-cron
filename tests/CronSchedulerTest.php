@@ -22,12 +22,28 @@ final class CronSchedulerTest extends AbstractTestCase
         $second = new StubCronJob('acme_second', Recurrence::Daily);
         $scheduler = new CronScheduler([$first, $second]);
 
-        $this->stubSchedulingFunctions();
-
         $scheduler->addHooks();
 
         self::assertSame(10, has_action('acme_first', [$first, 'run']));
         self::assertSame(10, has_action('acme_second', [$second, 'run']));
+    }
+
+    public function testAddHooksDefersSchedulingToInit(): void
+    {
+        $scheduler = new CronScheduler([new StubCronJob('acme_hook', Recurrence::Hourly)]);
+
+        $scheduler->addHooks();
+
+        self::assertSame(10, has_action('init', [$scheduler, 'syncEvents']));
+    }
+
+    public function testAddHooksRegistersTheCronSchedulesFilter(): void
+    {
+        $scheduler = new CronScheduler([new StubCronJob('acme_hook', Recurrence::Hourly)]);
+
+        $scheduler->addHooks();
+
+        self::assertSame(10, has_filter('cron_schedules', [$scheduler, 'addCustomSchedules']));
     }
 
     public function testSchedulesTheEventWhenNoneIsScheduledYet(): void
@@ -41,13 +57,12 @@ final class CronSchedulerTest extends AbstractTestCase
             ->once()
             ->with(Mockery::type('int'), 'hourly', 'acme_hook');
 
-        $scheduler->addHooks();
+        $scheduler->syncEvents();
     }
 
     public function testDoesNotRescheduleWhenTheRecurrenceIsUnchanged(): void
     {
-        $job = new StubCronJob('acme_hook', Recurrence::Hourly);
-        $scheduler = new CronScheduler([$job]);
+        $scheduler = new CronScheduler([new StubCronJob('acme_hook', Recurrence::Hourly)]);
 
         Functions\when('wp_get_scheduled_event')->justReturn($this->scheduledEvent('acme_hook', 'hourly'));
         Functions\when('get_option')->justReturn([]);
@@ -55,9 +70,7 @@ final class CronSchedulerTest extends AbstractTestCase
         Functions\expect('wp_schedule_event')->never();
         Functions\expect('wp_clear_scheduled_hook')->never();
 
-        $scheduler->addHooks();
-
-        self::assertSame(10, has_action('acme_hook', [$job, 'run']));
+        $scheduler->syncEvents();
     }
 
     public function testReschedulesWhenTheRecurrenceChanged(): void
@@ -73,30 +86,7 @@ final class CronSchedulerTest extends AbstractTestCase
             ->once()
             ->with(Mockery::type('int'), 'daily', 'acme_hook');
 
-        $scheduler->addHooks();
-    }
-
-    public function testRegistersTheCronSchedulesFilterWhenAJobUsesACustomSchedule(): void
-    {
-        $schedule = new IntervalSchedule('acme_five_minutes', 300, 'Every five minutes');
-        $scheduler = new CronScheduler([new StubCronJob('acme_hook', $schedule)]);
-
-        $this->stubSchedulingFunctions();
-
-        $scheduler->addHooks();
-
-        self::assertSame(10, has_filter('cron_schedules', [$scheduler, 'addCustomSchedules']));
-    }
-
-    public function testDoesNotRegisterTheCronSchedulesFilterForBuiltInRecurrences(): void
-    {
-        $scheduler = new CronScheduler([new StubCronJob('acme_hook', Recurrence::Hourly)]);
-
-        $this->stubSchedulingFunctions();
-
-        $scheduler->addHooks();
-
-        self::assertFalse(has_filter('cron_schedules', [$scheduler, 'addCustomSchedules']));
+        $scheduler->syncEvents();
     }
 
     public function testAddCustomSchedulesMergesCustomSchedulesIntoTheExistingOnes(): void
@@ -137,9 +127,9 @@ final class CronSchedulerTest extends AbstractTestCase
         Functions\expect('wp_clear_scheduled_hook')->once()->with('acme_orphan');
         Functions\expect('update_option')
             ->once()
-            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], false);
+            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], true);
 
-        $scheduler->addHooks();
+        $scheduler->syncEvents();
     }
 
     public function testToleratesAMissingManagedHooksOption(): void
@@ -152,9 +142,9 @@ final class CronSchedulerTest extends AbstractTestCase
         Functions\expect('wp_clear_scheduled_hook')->never();
         Functions\expect('update_option')
             ->once()
-            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], false);
+            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], true);
 
-        $scheduler->addHooks();
+        $scheduler->syncEvents();
     }
 
     public function testSkipsNonStringEntriesInTheManagedHooksOption(): void
@@ -167,9 +157,9 @@ final class CronSchedulerTest extends AbstractTestCase
         Functions\expect('wp_clear_scheduled_hook')->once()->with('acme_orphan');
         Functions\expect('update_option')
             ->once()
-            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], false);
+            ->with('kaiseki_cron_managed_hooks', ['acme_kept'], true);
 
-        $scheduler->addHooks();
+        $scheduler->syncEvents();
     }
 
     public function testDoesNotRewriteTheManagedHooksOptionWhenUnchanged(): void
@@ -182,19 +172,7 @@ final class CronSchedulerTest extends AbstractTestCase
         Functions\expect('wp_clear_scheduled_hook')->never();
         Functions\expect('update_option')->never();
 
-        $scheduler->addHooks();
-    }
-
-    /**
-     * Stub the WordPress functions the scheduling path calls but whose calls the
-     * test does not assert.
-     */
-    private function stubSchedulingFunctions(): void
-    {
-        Functions\when('wp_get_scheduled_event')->justReturn(false);
-        Functions\when('wp_schedule_event')->justReturn(true);
-        Functions\when('get_option')->justReturn([]);
-        Functions\when('update_option')->justReturn(true);
+        $scheduler->syncEvents();
     }
 
     /**
