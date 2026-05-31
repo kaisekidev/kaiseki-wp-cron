@@ -150,8 +150,11 @@ reschedule-on-change and cleanup-on-removal, which the snippet above silently ge
 
 ```bash
 composer install
-composer check   # check-deps, cs-check, phpstan
+composer check   # check-deps, cs-check, phpstan, phpunit
 ```
+
+Tests use [Brain Monkey](https://github.com/Brain-WP/BrainMonkey) to mock the WordPress functions, so
+no WordPress install is needed — run them on their own with `composer phpunit`.
 
 ## License
 

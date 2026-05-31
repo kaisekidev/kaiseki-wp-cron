@@ -42,8 +42,10 @@
   },
   "require-dev": {
     "bnf/phpstan-psr-container": "^1.1",
+    "brain/monkey": "^2.6",
     "kaiseki/php-coding-standard": "^1.0",
     "maglnet/composer-require-checker": "^4.0",
+    "mockery/mockery": "^1.6",
     "php-stubs/wordpress-stubs": "^6.2",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.0",
@@ -69,8 +71,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Kaiseki\\Test\\Functional\\WordPress\\Cron\\": "tests/functional",
-      "Kaiseki\\Test\\Unit\\WordPress\\Cron\\": "tests/unit"
+      "Kaiseki\\Test\\WordPress\\Cron\\": "tests"
     }
   },
   "minimum-stability": "stable",
@@ -78,7 +79,8 @@
     "check": [
       "@check-deps",
       "@cs-check",
-      "@phpstan"
+      "@phpstan",
+      "@phpunit"
     ],
     "check-deps": "composer-require-checker --config-file=require-checker.config.json",
     "cs-check": "php-cs-fixer fix --dry-run",

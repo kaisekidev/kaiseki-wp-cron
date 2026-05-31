@@ -26,8 +26,11 @@ First tagged release.
 
 - PHP requirement is `^8.2` (PHP 8.4 is the primary target); replaced the legacy `^7.4` scaffold.
 - Adopted the org baseline: `kaiseki/config: ^2.0` and `kaiseki/wp-hook: ^2.0`,
-  `kaiseki/php-coding-standard: ^1.0` with the shared PHPStan config (`level: max`), PHPStan 2,
-  PHPUnit 11, and `composer-require-checker: ^4.0` (added a `check-deps` script); replaced the
-  eventjet coding standard / PHPCS setup with `php-cs-fixer`. CI runs via the reusable workflow in
-  `kaisekidev/.github`. Static-analysis only — no test suite yet (`run-tests: false`).
+  `kaiseki/php-coding-standard: ^1.0` with the shared PHPStan config (`level: max`, over `src` and
+  `tests`), PHPStan 2, PHPUnit 11, and `composer-require-checker: ^4.0` (added a `check-deps`
+  script); replaced the eventjet coding standard / PHPCS setup with `php-cs-fixer`. CI runs via the
+  reusable workflow in `kaisekidev/.github`.
+- Full PHPUnit suite (Brain Monkey + Mockery) covering the scheduler, factory, config provider and
+  value objects — 100% line coverage of `src`; CI runs it on the 8.2/8.3/8.4 matrix with the 100%
+  coverage gate.
 - License set to `MIT`.
