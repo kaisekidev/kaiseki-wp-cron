@@ -1,18 +1,24 @@
 {
-  "symbol-whitelist": [
-    "null", "true", "false",
-    "static", "self", "parent",
-    "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object",
-    "wp_clear_scheduled_hook", "wp_next_scheduled", "wp_schedule_event"
-  ],
-  "php-core-extensions": [
-    "Core",
-    "date",
-    "pcre",
-    "Phar",
-    "Reflection",
-    "SPL",
-    "standard"
-  ],
-  "scan-files": []
+    "symbol-whitelist" : [
+        "null", "true", "false",
+        "static", "self", "parent",
+        "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object", "mixed",
+        "add_action",
+        "add_filter",
+        "get_option",
+        "update_option",
+        "wp_clear_scheduled_hook",
+        "wp_get_scheduled_event",
+        "wp_schedule_event"
+    ],
+    "php-core-extensions" : [
+        "Core",
+        "date",
+        "pcre",
+        "Phar",
+        "Reflection",
+        "SPL",
+        "standard"
+    ],
+    "scan-files": []
 }

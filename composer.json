@@ -1,13 +1,15 @@
 {
   "name": "kaiseki/wp-cron",
   "type": "library",
-  "description": "",
+  "description": "Register and manage WordPress cron jobs declaratively through a single config key",
   "keywords": [
     "wordpress",
+    "cron",
+    "scheduler",
     "module"
   ],
-  "license": "proprietary",
-  "homepage": "https://github.com/kaisekidev/wp-cron",
+  "license": "MIT",
+  "homepage": "https://github.com/kaisekidev/kaiseki-wp-cron",
   "authors": [
     {
       "name": "Kaiseki",
@@ -29,8 +31,38 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/kaisekidev/wp-cron/issues",
-    "source": "https://github.com/kaisekidev/wp-cron"
+    "issues": "https://github.com/kaisekidev/kaiseki-wp-cron/issues",
+    "source": "https://github.com/kaisekidev/kaiseki-wp-cron"
+  },
+  "require": {
+    "php": "^8.2",
+    "kaiseki/config": "^2.0",
+    "kaiseki/wp-hook": "^2.0",
+    "psr/container": "^1.1 || ^2.0"
+  },
+  "require-dev": {
+    "bnf/phpstan-psr-container": "^1.1",
+    "brain/monkey": "^2.6",
+    "kaiseki/php-coding-standard": "^1.0",
+    "maglnet/composer-require-checker": "^4.0",
+    "mockery/mockery": "^1.6",
+    "php-stubs/wordpress-stubs": "^6.2",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpunit/phpunit": "^11.0",
+    "roave/security-advisories": "dev-latest",
+    "szepeviktor/phpstan-wordpress": "^2.0"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true,
+      "composer/installers": true
+    },
+    "process-timeout": 0
   },
   "autoload": {
     "psr-4": {
@@ -39,37 +71,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Kaiseki\\Test\\Functional\\WordPress\\Cron\\": "tests/functional",
-      "Kaiseki\\Test\\Unit\\WordPress\\Cron\\": "tests/unit"
+      "Kaiseki\\Test\\WordPress\\Cron\\": "tests"
     }
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://wpackagist.org"
-    }
-  ],
-  "require": {
-    "php": "^7.4",
-    "kaiseki/wp-config": "^1.0",
-    "kaiseki/wp-hook": "^1.0",
-    "psr/container": "^1.1",
-    "thecodingmachine/safe": "^1.3"
-  },
-  "require-dev": {
-    "eventjet/coding-standard": "^3.2",
-    "maglnet/composer-require-checker": "^3.5",
-    "php-stubs/wordpress-stubs": "^5.8",
-    "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "^1.2",
-    "phpstan/phpstan-phpunit": "^1.0",
-    "phpstan/phpstan-strict-rules": "^1.1",
-    "phpunit/phpunit": "^9.5",
-    "szepeviktor/phpstan-wordpress": "^1.0",
-    "thecodingmachine/phpstan-safe-rule": "^1.0"
-  },
-  "config": {
-    "sort-packages": true
   },
   "minimum-stability": "stable",
   "scripts": {
@@ -79,11 +82,10 @@
       "@phpstan",
       "@phpunit"
     ],
-    "check-deps": "vendor/bin/composer-require-checker check --config-file=require-checker.config.json",
-    "cs-check": "vendor/bin/phpcs",
-    "cs-fix": "vendor/bin/phpcbf",
-    "phpstan": "vendor/bin/phpstan analyse",
-    "phpstan-pro": "vendor/bin/phpstan analyse --pro",
-    "phpunit": "vendor/bin/phpunit"
+    "check-deps": "composer-require-checker --config-file=require-checker.config.json",
+    "cs-check": "php-cs-fixer fix --dry-run",
+    "cs-fix": "php-cs-fixer fix --allow-risky=yes",
+    "phpstan": "phpstan analyse --memory-limit 1G",
+    "phpunit": "phpunit"
   }
 }
