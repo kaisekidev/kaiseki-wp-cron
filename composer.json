@@ -46,7 +46,7 @@
     "kaiseki/php-coding-standard": "^1.0",
     "maglnet/composer-require-checker": "^4.0",
     "mockery/mockery": "^1.6",
-    "php-stubs/wordpress-stubs": "^6.2",
+    "php-stubs/wordpress-stubs": "^6.2 || ^7.0",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan": "^2.0",
     "phpstan/phpstan-phpunit": "^2.0",
